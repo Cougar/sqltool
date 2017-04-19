@@ -97,6 +97,8 @@ class SQL(object):
 
     def import_dir(self, configdir):
         for table_name in os.listdir(configdir):
+            if table_name[0] == '.':
+                continue
             t = Table()
             t.table_name = table_name
             self.tables.append(t.import_dir(configdir))
