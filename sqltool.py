@@ -97,11 +97,15 @@ class Table(dict):
             raise Exception('cant make filename without UNIQUE or PRIMARY key in %s', self.table_name)
         return '_'.join(uni) if uni else '_'.join(pri)
 
-    def __str__(self):
+    def _sql_statements(self):
         if self._truncate:
-            return '\n'.join(['TRUNCATE TABLE `' + self.table_name + '`;'] + ['INSERT INTO `' + self.table_name + '` ' + str(self[row]) for row in self])
+            yield('TRUNCATE TABLE `' + self.table_name + '`')
+            yield from ['INSERT INTO `' + self.table_name + '`' + str(self[row]) for row in self]
         else:
-            return '\n'.join(['REPLACE INTO `' + self.table_name + '` ' + str(self[row]) for row in self])
+            yield from ['REPLACE INTO `' + self.table_name + '`' + str(self[row]) for row in self]
+
+    def __str__(self):
+        return '\n'.join([statement + ';' for statement in self._sql_statements()])
 
 
 class SQL(object):
