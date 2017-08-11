@@ -80,6 +80,7 @@ class Table(dict):
                 raise ex
             r.row_name = row_name
             self[row_name] = r
+        cur.close()
 
     def _row_name_template(self, cnx):
         cur = cnx.cursor()
@@ -91,6 +92,7 @@ class Table(dict):
                 uni.append('{' + col[0] + '}')
             elif col[3] == 'PRI':
                 pri.append('{' + col[0] + '}')
+        cur.close()
         if not uni and not pri:
             raise Exception('cant make filename without UNIQUE or PRIMARY key in %s', self.table_name)
         return '_'.join(uni) if uni else '_'.join(pri)
@@ -126,6 +128,7 @@ class SQL(object):
             t.table_name = table_name
             t.import_sql(cnx)
             self.tables.append(t)
+        cur.close()
 
     def dump_dir(self, dumpdir):
         os.mkdir(dumpdir)
