@@ -2,7 +2,7 @@
 
 import sys
 import os
-import mysql.connector
+import MySQLdb
 import argparse
 
 class Col(str):
@@ -56,7 +56,7 @@ class Table(dict):
 
     def import_sql(self, cnx):
         row_name_templ = self._row_name_template(cnx)
-        cur = cnx.cursor(buffered=False)
+        cur = cnx.cursor()
         cur.execute('SELECT * FROM ' + self.table_name)
         fields = [desc[0] for desc in cur.description]
         for (row) in cur:
@@ -74,7 +74,7 @@ class Table(dict):
             self[row_name] = r
 
     def _row_name_template(self, cnx):
-        cur = cnx.cursor(buffered=True)
+        cur = cnx.cursor()
         cur.execute('DESCRIBE ' + self.table_name)
         uni = []
         pri = []
@@ -104,8 +104,8 @@ class SQL(object):
             self.tables.append(t.import_dir(configdir))
 
     def import_sql(self, dbhost='localhost', dbuser='test', dbpassword='test', db='test', tables=[]):
-        cnx = mysql.connector.connect(user=dbuser, password=dbpassword, host=dbhost, database=db)
-        cur = cnx.cursor(buffered=True)
+        cnx = MySQLdb.connect(user=dbuser, passwd=dbpassword, host=dbhost, db=db)
+        cur = cnx.cursor()
         cur.execute('SHOW TABLES')
         for (table_name,) in cur:
             if table_name not in tables:
