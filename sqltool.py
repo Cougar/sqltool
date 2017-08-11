@@ -139,10 +139,10 @@ class SQL(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SQL import/export tool')
     fileparser = argparse.ArgumentParser(add_help=False)
-    fileparser.add_argument('--from-dir', help='import directory', default=os.environ.get('FROM_DIR', None))
+    fileparser.add_argument('--from-dir', help='import directory', default=os.environ.get('FROM_DIR', None), required=True)
     fileparser.add_argument('--truncate', help='truncate and insert table', action='store_true')
     sqlparser = argparse.ArgumentParser(add_help=False)
-    sqlparser.add_argument('--to-dir', help='export directory', default=os.environ.get('TO_DIR', None))
+    sqlparser.add_argument('--to-dir', help='export directory', default=os.environ.get('TO_DIR', None), required=True)
     sqlparser.add_argument('--mysql-host', help='MySQL host', default=os.environ.get('MYSQL_HOST', 'localhost'))
     sqlparser.add_argument('--mysql-port', help='MySQL port', default=os.environ.get('MYSQL_PORT', 3306), type=int)
     sqlparser.add_argument('--mysql-db', help='MySQL database', default=os.environ.get('MYSQL_DB', 'test'))
@@ -155,16 +155,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.command == 'loadfiles':
-        if not args.from_dir:
-            parser.print_help()
-            sys.exit(2)
         sql = SQL()
         sql.import_dir(args.from_dir, args.truncate)
         print(str(sql))
     elif args.command == 'dumpsql':
-        if not args.to_dir:
-            parser.print_help()
-            sys.exit(2)
         sql = SQL()
         sql.import_sql(args.mysql_host, args.mysql_port, args.mysql_username, args.mysql_password, args.mysql_db, args.tables)
         sql.dump_dir(args.to_dir)
