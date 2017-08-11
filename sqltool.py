@@ -103,7 +103,7 @@ class Table(dict):
 
 
 class SQL(object):
-    def __init__(self, configdir='config'):
+    def __init__(self):
         self.tables = []
 
     def import_dir(self, configdir, truncate=False):
