@@ -82,6 +82,12 @@ class Table(dict):
             self[row_name] = r
         cur.close()
 
+    def update_sql(self, cnx):
+        for statement in self._sql_statements():
+            cur = cnx.cursor()
+            cur.execute(statement)
+            cur.close()
+
     def _row_name_template(self, cnx):
         cur = cnx.cursor()
         cur.execute('DESCRIBE ' + self.table_name)
@@ -139,6 +145,11 @@ class SQL(object):
         for table in self.tables:
             table.dump_dir(dumpdir)
 
+    def update_sql(self, dbhost='localhost', dbport=3306, dbuser='test', dbpassword='test', db='test'):
+        cnx = MySQLdb.connect(user=dbuser, passwd=dbpassword, host=dbhost, port=dbport, db=db)
+        for table_name in self.tables:
+            table_name.update_sql(cnx)
+
     def __str__(self):
         return '\n\n'.join([str(table_name) for table_name in self.tables])
 
@@ -147,7 +158,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SQL import/export tool')
     fileparser = argparse.ArgumentParser(add_help=False)
     fileparser.add_argument('--from-dir', help='import directory', default=os.environ.get('FROM_DIR', None), required=True)
+    fileparser.add_argument('--dry-run', help='only print SQL statements', action='store_true')
     fileparser.add_argument('--truncate', help='truncate and insert table', action='store_true')
+    fileparser.add_argument('--mysql-host', help='MySQL host', default=os.environ.get('MYSQL_HOST', 'localhost'))
+    fileparser.add_argument('--mysql-port', help='MySQL port', default=os.environ.get('MYSQL_PORT', 3306), type=int)
+    fileparser.add_argument('--mysql-db', help='MySQL database', default=os.environ.get('MYSQL_DB', 'test'))
+    fileparser.add_argument('--mysql-username', help='MySQL username', default=os.environ.get('MYSQL_USERNAME', 'test'))
+    fileparser.add_argument('--mysql-password', help='MySQL password', default=os.environ.get('MYSQL_PASSWORD', ''))
     sqlparser = argparse.ArgumentParser(add_help=False)
     sqlparser.add_argument('--to-dir', help='export directory', default=os.environ.get('TO_DIR', None), required=True)
     sqlparser.add_argument('--mysql-host', help='MySQL host', default=os.environ.get('MYSQL_HOST', 'localhost'))
@@ -164,7 +181,10 @@ if __name__ == '__main__':
     if args.command == 'loadfiles':
         sql = SQL()
         sql.import_dir(args.from_dir, args.truncate)
-        print(str(sql))
+        if args.dry_run:
+            print(str(sql))
+        else:
+            sql.update_sql(args.mysql_host, args.mysql_port, args.mysql_username, args.mysql_password, args.mysql_db)
     elif args.command == 'dumpsql':
         sql = SQL()
         sql.import_sql(args.mysql_host, args.mysql_port, args.mysql_username, args.mysql_password, args.mysql_db, args.tables)
