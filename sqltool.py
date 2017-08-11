@@ -103,8 +103,8 @@ class SQL(object):
             t.table_name = table_name
             self.tables.append(t.import_dir(configdir))
 
-    def import_sql(self, dbhost='localhost', dbuser='test', dbpassword='test', db='test', tables=[]):
-        cnx = MySQLdb.connect(user=dbuser, passwd=dbpassword, host=dbhost, db=db)
+    def import_sql(self, dbhost='localhost', dbport=3306, dbuser='test', dbpassword='test', db='test', tables=[]):
+        cnx = MySQLdb.connect(user=dbuser, passwd=dbpassword, host=dbhost, port=dbport, db=db)
         cur = cnx.cursor()
         cur.execute('SHOW TABLES')
         for (table_name,) in cur:
@@ -131,6 +131,7 @@ if __name__ == '__main__':
     sqlparser = argparse.ArgumentParser(add_help=False)
     sqlparser.add_argument('--to-dir', help='export directory', default=os.environ.get('TO_DIR', None))
     sqlparser.add_argument('--mysql-host', help='MySQL host', default=os.environ.get('MYSQL_HOST', 'localhost'))
+    sqlparser.add_argument('--mysql-port', help='MySQL port', default=os.environ.get('MYSQL_PORT', 3306), type=int)
     sqlparser.add_argument('--mysql-db', help='MySQL database', default=os.environ.get('MYSQL_DB', 'test'))
     sqlparser.add_argument('--mysql-username', help='MySQL username', default=os.environ.get('MYSQL_USERNAME', 'test'))
     sqlparser.add_argument('--mysql-password', help='MySQL password', default=os.environ.get('MYSQL_PASSWORD', ''))
@@ -152,7 +153,7 @@ if __name__ == '__main__':
             parser.print_help()
             sys.exit(2)
         sql = SQL()
-        sql.import_sql(args.mysql_host, args.mysql_username, args.mysql_password, args.mysql_db, args.tables)
+        sql.import_sql(args.mysql_host, args.mysql_port, args.mysql_username, args.mysql_password, args.mysql_db, args.tables)
         sql.dump_dir(args.to_dir)
     else:
         parser.print_help()
