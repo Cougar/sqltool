@@ -42,6 +42,14 @@ class Table(dict):
     def table_name(self, value):
         self._table_name = value
 
+    @property
+    def truncate(self):
+        return self._truncate
+
+    @truncate.setter
+    def truncate(self, value):
+        self._truncate = value
+
     def import_dir(self, configdir):
         for row in os.listdir(configdir + os.sep + self.table_name):
             r = Row()
@@ -88,19 +96,23 @@ class Table(dict):
         return '_'.join(uni) if uni else '_'.join(pri)
 
     def __str__(self):
-        return '\n'.join(['REPLACE INTO `' + self.table_name + '` ' + str(self[row]) for row in self])
+        if self._truncate:
+            return '\n'.join(['TRUNCATE TABLE `' + self.table_name + '`;'] + ['INSERT INTO `' + self.table_name + '` ' + str(self[row]) for row in self])
+        else:
+            return '\n'.join(['REPLACE INTO `' + self.table_name + '` ' + str(self[row]) for row in self])
 
 
 class SQL(object):
     def __init__(self, configdir='config'):
         self.tables = []
 
-    def import_dir(self, configdir):
+    def import_dir(self, configdir, truncate=False):
         for table_name in os.listdir(configdir):
             if table_name[0] == '.':
                 continue
             t = Table()
             t.table_name = table_name
+            t.truncate = truncate
             self.tables.append(t.import_dir(configdir))
 
     def import_sql(self, dbhost='localhost', dbport=3306, dbuser='test', dbpassword='test', db='test', tables=[]):
@@ -128,6 +140,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SQL import/export tool')
     fileparser = argparse.ArgumentParser(add_help=False)
     fileparser.add_argument('--from-dir', help='import directory', default=os.environ.get('FROM_DIR', None))
+    fileparser.add_argument('--truncate', help='truncate and insert table', action='store_true')
     sqlparser = argparse.ArgumentParser(add_help=False)
     sqlparser.add_argument('--to-dir', help='export directory', default=os.environ.get('TO_DIR', None))
     sqlparser.add_argument('--mysql-host', help='MySQL host', default=os.environ.get('MYSQL_HOST', 'localhost'))
@@ -146,7 +159,7 @@ if __name__ == '__main__':
             parser.print_help()
             sys.exit(2)
         sql = SQL()
-        sql.import_dir(args.from_dir)
+        sql.import_dir(args.from_dir, args.truncate)
         print(str(sql))
     elif args.command == 'dumpsql':
         if not args.to_dir:
