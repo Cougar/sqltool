@@ -106,9 +106,7 @@ class Table(dict):
     def _sql_statements(self):
         if self._truncate:
             yield('TRUNCATE TABLE `' + self.table_name + '`')
-            yield from ['INSERT INTO `' + self.table_name + '`' + str(self[row]) for row in self]
-        else:
-            yield from ['REPLACE INTO `' + self.table_name + '`' + str(self[row]) for row in self]
+        yield from ['REPLACE INTO `' + self.table_name + '`' + str(self[row]) for row in self]
 
     def __str__(self):
         return '\n'.join([statement + ';' for statement in self._sql_statements()])
