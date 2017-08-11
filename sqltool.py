@@ -133,7 +133,7 @@ if __name__ == '__main__':
     sqlparser.add_argument('--mysql-host', help='MySQL host', default=os.environ.get('MYSQL_HOST', 'localhost'))
     sqlparser.add_argument('--mysql-db', help='MySQL database', default=os.environ.get('MYSQL_DB', 'test'))
     sqlparser.add_argument('--mysql-username', help='MySQL username', default=os.environ.get('MYSQL_USERNAME', 'test'))
-    sqlparser.add_argument('--mysql-password', help='MySQL password', default=os.environ.get('MYSQL_PASSWORD', None))
+    sqlparser.add_argument('--mysql-password', help='MySQL password', default=os.environ.get('MYSQL_PASSWORD', ''))
     sqlparser.add_argument('tables', metavar='table', type=str, nargs='+', help='table name')
     service_subparsers = parser.add_subparsers(title="command", dest="command")
     service_subparsers.add_parser("loadfiles", help="load SQL data from files", parents=[fileparser])
